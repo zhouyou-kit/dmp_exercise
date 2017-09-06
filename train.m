@@ -3,7 +3,7 @@ global exercise_id;
 % 2: new dmp formulation with goal change
 % 3: add tracking system and phase stopping
 
-exercise_id = 3;
+exercise_id = 1;
 
 trajData = processTrajectory(trajectory);
 
