@@ -1,4 +1,6 @@
 function traj = dmptest(w, paras)
+global dmp_id
+global exercise_id
 
 kernelfcn = paras.kernelfcn;
 goals = paras.goals;
@@ -9,14 +11,8 @@ D = paras.D;
 y = paras.y0;
 dy = paras.dy;
 
-if ~isfield(paras,'scaling')
-    scaling = 1;
-else
-    scaling = paras.scaling;
-end
-
 if ~isfield(paras, 'extForce')
-    extForce = [0,0,0];
+    extForce = [0,0,0,0];
     isDisturbance = true;
 else
     extForce = paras.extForce;
@@ -24,45 +20,59 @@ else
 end
 
 u = 1;
+ax = paras.ax;
 
 id = 1;    
 yreal = y;
+dyreal = dy;
 Y(id,:) = yreal;
 timestamps(id) = 0;
 t = 0;
-while u > 1e-1
+while u > 1e-2     
+    id = id + 1;
     kf = kernelfcn(u);
     forces = w' * kf / sum(kf);
-    
-    %% Eular method
-    dy = dy + dt * (K * (goals - y) - D * dy + scaling .* forces' * u)/tau;
-    y = y + dy * dt/tau;
-    
 
-    
-    %% tracking
-    Ky = 100;
-    dyreal = dyreal + dt * (Ky * (y - yreal) - Dy * dyreal)
-    yreal = yreal + Ky * (y - yreal) * dt;
-    if timestamps(id) > extForce(1) && ~isDisturbance
-        isDisturbance = true;
-        dyreal = dyreal + extForce(2:end);
+    switch exercise_id
+        case 1
+            scaling = (goals - paras.y0)./paras.original_scaling;
+            ddy = K * (goals - y) - D * dy + scaling.* forces' * u;
+        case {2,
+            scaling = goals - paras.y0;
+            ddy = K * (goals - y) - D * dy - K * scaling * u + K * forces' * u;
     end
     
+    %% Euler Method
+    dy = dy + dt * ddy/tau;
+    y = y + dy * dt/tau;
     
-    id = id + 1;
-    timestamps(id) = timestamps(id-1) + dt;
-    Y(id,:) = y;
+    %% concept proof
+%     Y(id,:) = y; 
+    %% tracking
+    Ky = 100;
+    Dy = sqrt(4*Ky);
+    ddyreal = Ky * (y - yreal) - Dy * dyreal;
+    if timestamps(id-1) >= extForce(1) && timestamps(id-1) < extForce(1) + extForce(2)
+        ddyreal = ddyreal + extForce(3:end);
+    end
+    dyreal = dyreal + ddyreal * dt;
+    yreal = yreal + dyreal * dt;
+    Y(id,:) = yreal;
+    
+   
     %% canonical system
-    % canonical system
-%     ax = -1;
-%     u = u + 1/tau * ax * u * dt;
-    
-    % canonical system with phase stop
-    ax = -1;
-    ac = 10;
-    phasestop = 1 + ac * sqrt(sum((yreal - y).^2));
-    u = u + 1/tau * ax * u * dt / phasestop; 
+    switch exercise_id
+        case {1,2}
+            u = u + 1/tau * ax * u * dt;            
+        case 3
+            ac = 10;
+            phasestop = 1 + ac * sqrt(sum((yreal - y).^2));
+            u = u + 1/tau * ax * u * dt / phasestop;
+    end
+
+    t = t + dt;
+    timestamps(id) = t;
+
 end
 
 traj = [timestamps',Y];

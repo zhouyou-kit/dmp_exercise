@@ -1,4 +1,6 @@
 function traj = dmptest(w, paras)
+global exercise_id
+global alpha_phaseStop
 
 kernelfcn = paras.kernelfcn;
 goals = paras.goals;
@@ -9,12 +11,6 @@ D = paras.D;
 y = paras.y0;
 dy = paras.dy;
 
-if ~isfield(paras,'scaling')
-    scaling = 1;
-else
-    scaling = paras.scaling;
-end
-
 if ~isfield(paras, 'extForce')
     extForce = [0,0,0,0];
     isDisturbance = true;
@@ -24,46 +20,60 @@ else
 end
 
 u = 1;
+ax = paras.ax;
 
-id = 1;    
+id = 1;
 yreal = y;
 dyreal = dy;
 Y(id,:) = yreal;
 timestamps(id) = 0;
 t = 0;
-while u > 2e-1        
+while u > 1e-2
     id = id + 1;
     kf = kernelfcn(u);
     forces = w' * kf / sum(kf);
-
-    %% Eular method
-    dy = dy + dt * (K * (goals - y) - D * dy + scaling .* forces' * u)/tau;
+    
+    switch exercise_id
+        case 1
+            scaling = (goals - paras.y0)./paras.original_scaling;
+            ddy = K * (goals - y) - D * dy + scaling.* forces' * u;
+        case {2,3}
+            scaling = goals - paras.y0;
+            ddy = K * (goals - y) - D * dy - K * scaling * u + K * forces' * u;
+    end
+    
+    %% Euler Method
+    dy = dy + dt * ddy/tau;
     y = y + dy * dt/tau;
-    Y(id,:) = y;
     
-    %% tracking
-%     Ky = 100;
-%     Dy = sqrt(4*Ky);
-%     ddyreal = Ky * (y - yreal) - Dy * dyreal;
-%     if timestamps(id-1) >= extForce(1) && timestamps(id-1) < extForce(1) + extForce(2)
-%         ddyreal = ddyreal + extForce(3:end);
-%     end
-%     dyreal = dyreal + ddyreal * dt;
-%     yreal = yreal + dyreal * dt;
-%     Y(id,:) = yreal;
+    switch exercise_id
+        case {1,2}
+            Y(id,:) = y;
+        case 3
+            Ky = 300;
+            Dy = sqrt(4*Ky);
+            ddyreal = Ky * (y - yreal) - Dy * dyreal;
+            if timestamps(id-1) >= extForce(1) && timestamps(id-1) < extForce(1) + extForce(2)
+                ddyreal = ddyreal + extForce(3:end);
+            end
+            dyreal = dyreal + ddyreal * dt;
+            yreal = yreal + dyreal * dt;
+            Y(id,:) = yreal;
+    end
     
-    timestamps(id) = timestamps(id-1) + dt;
-   
+    
     %% canonical system
-    % canonical system
-    ax = -1;
-    u = u + 1/tau * ax * u * dt;
+    switch exercise_id
+        case {1,2}
+            u = u + 1/tau * ax * u * dt;
+        case 3
+            phasestop = 1 + paras.ac * sqrt(sum((yreal - y).^2));
+            u = u + 1/tau * ax * u * dt / phasestop;
+    end
     
-    % canonical system with phase stop
-%     ax = -1;
-%     ac = 10;
-%     phasestop = 1 + ac * sqrt(sum((yreal - y).^2));
-%     u = u + 1/tau * ax * u * dt / phasestop; 
+    t = t + dt;
+    timestamps(id) = t;
+    
 end
 
 traj = [timestamps',Y];
