@@ -1,11 +1,6 @@
 function w = dmptrain( trajData ,paras)
 global exercise_id
-global dmp_id
-if exercise_id >= 2
-    dmp_id = 2;
-else
-    dmp_id = 1;
-end
+
 
 kernelfcn = paras.kernelfcn;
 K = paras.K;
@@ -35,12 +30,11 @@ Yd = [zeros(1,size(Y,2));diff(Y)/dt];
 Ydd = [zeros(1,size(Yd,2));diff(Yd)/dt];
 
 for i = 2 : size(trajData,2)   
-   switch dmp_id
+   switch exercise_id
        case 1
-        y = -K * (goals(i-1) - Y(:,i-1)) + D * Yd(:,i-1) + tau * Ydd(:,i-1);
-    
-       case 2
-        y = (tau * Ydd(:,i-1) + D * Yd(:,i-1))/K - (goals(i-1) - Y(:,i-1)) + (goals(i-1) - Y(1,i-1)) * x';
+           y = -K * (goals(i-1) - Y(:,i-1)) + D * Yd(:,i-1) + tau * Ydd(:,i-1);  
+       case {2,3}
+           y = (tau * Ydd(:,i-1) + D * Yd(:,i-1))/K - (goals(i-1) - Y(:,i-1)) + (goals(i-1) - Y(1,i-1)) * x';
    end
    
    y = y./(x');

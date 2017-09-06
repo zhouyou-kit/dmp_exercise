@@ -28,7 +28,7 @@ dyreal = dy;
 Y(id,:) = yreal;
 timestamps(id) = 0;
 t = 0;
-while u > 1e-2
+while u > 1e-3
     id = id + 1;
     kf = kernelfcn(u);
     forces = w' * kf / sum(kf);
@@ -54,7 +54,8 @@ while u > 1e-2
             Dy = sqrt(4*Ky);
             ddyreal = Ky * (y - yreal) - Dy * dyreal;
             if timestamps(id-1) >= extForce(1) && timestamps(id-1) < extForce(1) + extForce(2)
-                ddyreal = ddyreal + extForce(3:end);
+                extForce(3:end)
+                ddyreal = ddyreal + extForce(3:end)
             end
             dyreal = dyreal + ddyreal * dt;
             yreal = yreal + dyreal * dt;

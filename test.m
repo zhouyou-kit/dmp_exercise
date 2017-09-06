@@ -7,7 +7,7 @@ testparas.dt = 0.001;
 start_offset = [0,0];
 goal_offset = [0,0];
 speed = 1;
-external_force = [0.3,0.01,0,0];
+external_force = [0,0,0,0];
 alpha_phaseStop = 20;
 
 
