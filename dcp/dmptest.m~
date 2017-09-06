@@ -1,0 +1,70 @@
+function traj = dmptest(w, paras)
+
+kernelfcn = paras.kernelfcn;
+goals = paras.goals;
+tau = paras.tau;
+dt = paras.dt;
+K = paras.K;
+D = paras.D;
+y = paras.y0;
+dy = paras.dy;
+
+if ~isfield(paras,'scaling')
+    scaling = 1;
+else
+    scaling = paras.scaling;
+end
+
+if ~isfield(paras, 'extForce')
+    extForce = [0,0,0];
+    isDisturbance = true;
+else
+    extForce = paras.extForce;
+    isDisturbance = false;
+end
+
+u = 1;
+
+id = 1;    
+yreal = y;
+Y(id,:) = yreal;
+timestamps(id) = 0;
+t = 0;
+while u > 1e-1
+    kf = kernelfcn(u);
+    forces = w' * kf / sum(kf);
+    
+    %% Eular method
+    dy = dy + dt * (K * (goals - y) - D * dy + scaling .* forces' * u)/tau;
+    y = y + dy * dt/tau;
+    
+
+    
+    %% tracking
+    Ky = 100;
+    dyreal = dyreal + dt * (Ky * (y - yreal) - Dy * dyreal)
+    yreal = yreal + Ky * (y - yreal) * dt;
+    if timestamps(id) > extForce(1) && ~isDisturbance
+        isDisturbance = true;
+        dyreal = dyreal + extForce(2:end);
+    end
+    
+    
+    id = id + 1;
+    timestamps(id) = timestamps(id-1) + dt;
+    Y(id,:) = y;
+    %% canonical system
+    % canonical system
+%     ax = -1;
+%     u = u + 1/tau * ax * u * dt;
+    
+    % canonical system with phase stop
+    ax = -1;
+    ac = 10;
+    phasestop = 1 + ac * sqrt(sum((yreal - y).^2));
+    u = u + 1/tau * ax * u * dt / phasestop; 
+end
+
+traj = [timestamps',Y];
+end
+
