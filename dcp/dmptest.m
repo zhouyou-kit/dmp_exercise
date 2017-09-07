@@ -1,6 +1,5 @@
 function traj = dmptest(w, paras)
 global exercise_id
-global alpha_phaseStop
 
 kernelfcn = paras.kernelfcn;
 goals = paras.goals;
@@ -13,10 +12,8 @@ dy = paras.dy;
 
 if ~isfield(paras, 'extForce')
     extForce = [0,0,0,0];
-    isDisturbance = true;
 else
     extForce = paras.extForce;
-    isDisturbance = false;
 end
 
 u = 1;
