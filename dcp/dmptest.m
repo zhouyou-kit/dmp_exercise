@@ -54,8 +54,7 @@ while u > 1e-3
             Dy = sqrt(4*Ky);
             ddyreal = Ky * (y - yreal) - Dy * dyreal;
             if timestamps(id-1) >= extForce(1) && timestamps(id-1) < extForce(1) + extForce(2)
-                extForce(3:end)
-                ddyreal = ddyreal + extForce(3:end)
+                ddyreal = ddyreal + extForce(3:end);
             end
             dyreal = dyreal + ddyreal * dt;
             yreal = yreal + dyreal * dt;
