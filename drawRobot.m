@@ -1,8 +1,10 @@
+sample_Step = 10;
+
 mdl_twolink;
 q = [0,0];
 M = [1,0,1,0,0,0];
 qtraj = [];
-for i = 1 : 10 : size(testTraj,1)
+for i = 1 : sample_Step : size(testTraj,1)
     goal_transform = transl(testTraj(i,2), 0, testTraj(i,3)) * trotx(pi);
     q = twolink.ikine(goal_transform,q,M);
     qtraj = [qtraj;q];

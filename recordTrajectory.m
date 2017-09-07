@@ -1,4 +1,3 @@
-addpath(genpath('./'))
 clear;
 close all;
 

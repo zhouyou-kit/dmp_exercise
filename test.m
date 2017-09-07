@@ -26,14 +26,14 @@ end
 
 testTraj = dmptest(Ws, testparas);
 
-if ~isempty(f1)
-    f1 = figure;
-    axis([-2 2 -2 2]);
-    hold on;
-    plot(trajData(:,2), trajData(:,3), 'b-');
-end
-figure(f1)
+figure
+axis([-2 2 -2 2]);
 hold on;
+plot(trajData(:,2), trajData(:,3), 'b-');
 plot(testTraj(:,2), testTraj(:,3), 'r--');
 
-
+figure
+axis([0 1 -2 2]);
+hold on
+plot(testTraj(:,1), testTraj(:,2), 'g-');
+plot(testTraj(:,1), testTraj(:,3), 'm-');
