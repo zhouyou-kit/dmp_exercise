@@ -1,7 +1,9 @@
+clearvars -except trajectory
 global exercise_id;
 % 1: general dmp formulation
 % 2: new dmp formulation with goal change
-% 3: add tracking system and phase stopping
+% 3: add tracking system and phase stopping (simulated real robot
+% application)
 
 exercise_id = 1;
 

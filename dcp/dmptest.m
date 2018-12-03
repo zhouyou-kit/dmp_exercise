@@ -46,15 +46,15 @@ while u > 1e-3
     switch exercise_id
         case {1,2}
             Y(id,:) = y;
-        case 3
-            Ky = 300;
+        case 3 % A PD controller is implemented here to follow DMP trajectory
+            Ky = 1000;
             Dy = sqrt(4*Ky);
             ddyreal = Ky * (y - yreal) - Dy * dyreal;
             if timestamps(id-1) >= extForce(1) && timestamps(id-1) < extForce(1) + extForce(2)
                 ddyreal = ddyreal + extForce(3:end);
             end
-            dyreal = dyreal + ddyreal * dt;
-            yreal = yreal + dyreal * dt;
+            dyreal = dyreal + ddyreal * dt/tau;
+            yreal = yreal + dyreal * dt/tau;
             Y(id,:) = yreal;
     end
     
