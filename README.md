@@ -8,6 +8,6 @@ Run set_env.m to setup the environment.
 There are three main scripts during the exercise:
 1) recordTrajectory.m => run and draw a shape on the figure
 2) train.m => run to train a DMP (change exercise_id for the corresponding 3 exercises) 
-3) test.m => run to test DMP (change several hyper parameters to see the results)
+3) test.m => run to test DMP (change several hyper parameters to see the results) \\
 ================================
 4) (optional) drawRobot.m => visualize a 2D robot for executing DMP (Robotic Toolbox is used here)
